@@ -18,10 +18,10 @@ public class PlayerMovemechanim : NetworkBehaviour
     {
         var bullet = (GameObject)Instantiate(
             bulletPrefab,
-            transform.position - transform.right,
-            Quaternion.identity);
+            transform.position + transform.right, //set var
+            Quaternion.identity); // rotation
 
-        bullet.GetComponent<Rigidbody2D>().velocity = -transform.right * 4;
+        bullet.GetComponent<Rigidbody2D>().velocity = transform.right * 4; 
 
         //spawn on clients
         NetworkServer.Spawn(bullet);
@@ -44,8 +44,11 @@ public class PlayerMovemechanim : NetworkBehaviour
         var x = Input.GetAxisRaw("Horizontal") * 0.1f;
         var y = Input.GetAxisRaw("Vertical") * 0.1f;
 
+
         if (Input.GetButton("Horizontal") || Input.GetButton("Vertical"))
         {
+
+
             bool isWalking = (Mathf.Abs(x) + Mathf.Abs(y)) > 0;
 
             anim.SetBool("isWalking", isWalking);
@@ -56,14 +59,13 @@ public class PlayerMovemechanim : NetworkBehaviour
                 anim.SetFloat("y", y);
                 //transform.Translate(x, y, 0);
                 transform.position += new Vector3(x, y, 0).normalized * Time.deltaTime;
+
             }
-
-
-
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                CmdFire();
-            }
+        }
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            CmdFire();
+            Debug.Log("Firing");
         }
     }
 
