@@ -7,6 +7,12 @@ public class PlayerMovemechanim : NetworkBehaviour
 {
     Animator anim;
     public GameObject bulletPrefab;
+    //[SyncVar]
+    public Vector2 fireOffSet;
+    //[SyncVar]
+    public Vector3 fireDirection;
+    [SyncVar]
+    public Vector3 shootDir;
 
     public override void OnStartLocalPlayer()
     {
@@ -41,15 +47,18 @@ public class PlayerMovemechanim : NetworkBehaviour
 
     //Command runs function on server
     [Command]
-    void CmdFire()
+    void CmdFire(Vector3 direction, Vector2 offset)
     {
-        var bullet = (GameObject)Instantiate(
-            bulletPrefab,
-            transform.position + transform.right, //set var
+        //Debug.Log(playerrot);
+
+        //transform.position+1.0*transform.forward,transform.rotation));
+        var bullet = (GameObject)Instantiate(bulletPrefab,
+            new Vector3(offset.x, offset.y, transform.position.z),
             Quaternion.identity); // rotation
 
-        bullet.GetComponent<Rigidbody2D>().velocity = transform.right * 4;
-
+        bullet.GetComponent<Rigidbody2D>().velocity = direction * 6;
+        float rot_z = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        bullet.GetComponent<Rigidbody2D>().transform.rotation = Quaternion.Euler(0f, 0f, rot_z);
         //spawn on clients
         NetworkServer.Spawn(bullet);
 
@@ -68,9 +77,12 @@ public class PlayerMovemechanim : NetworkBehaviour
         if (!isLocalPlayer)
             return;
         //anim = GetComponent<Animator>();
-        var x = Input.GetAxisRaw("Horizontal") * 0.1f;
-        var y = Input.GetAxisRaw("Vertical") * 0.1f;
+        var x = Input.GetAxisRaw("Horizontal");
+        var y = Input.GetAxisRaw("Vertical");
+        fireDir(x,y);
+        Debug.Log(transform.rotation);
 
+        
         if (Input.GetButton("Horizontal") || Input.GetButton("Vertical"))
         {
             bool isWalking = (Mathf.Abs(x) + Mathf.Abs(y)) > 0;
@@ -79,12 +91,78 @@ public class PlayerMovemechanim : NetworkBehaviour
 
 
         }
+        
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            CmdFire();
-            Debug.Log("Firing");
+            var xsend = transform.position.x;
+            var ysend = transform.position.y;
+            var zsend = transform.position.z;
+
+            Quaternion rot = transform.rotation;
+
+            CmdFire(fireDirection, fireOffSet);
+            //Debug.Log("Firing");
         }
     }
 
-
+    void fireDir(float x, float y)
+    {
+        //Debug.Log(fireOffSet);
+        if (x == -1 && y == 0)
+        {
+            fireDirection.x = -0.2f;
+            fireDirection.y = 0;
+            fireDirection.z = 0;
+            fireOffSet = transform.position + fireDirection;
+        }
+        else if (x == 1 && y == 0)
+        {
+            fireDirection.x = 0.2f;
+            fireDirection.y = 0;
+            fireDirection.z = 0;
+            fireOffSet = transform.position + fireDirection;
+        }
+        else if (x == 0 && y == 1)
+        {
+            fireDirection.x = 0;
+            fireDirection.y = 0.2f;
+            fireDirection.z = 0;
+            fireOffSet = transform.position + fireDirection;
+        }
+        else if (x == 0 && y == -1)
+        {
+            fireDirection.x = 0;
+            fireDirection.y = -0.2f;
+            fireDirection.z = 0;
+            fireOffSet = transform.position + fireDirection;
+        }
+        else if (x == -1 && y == -1)
+        {
+            fireDirection.x = -0.2f;
+            fireDirection.y = -0.2f;
+            fireDirection.z = 0;
+            fireOffSet = transform.position + fireDirection;
+        }
+        else if (x == 1 && y == -1)
+        {
+            fireDirection.x = 0.2f;
+            fireDirection.y = -0.2f;
+            fireDirection.z = 0;
+            fireOffSet = transform.position + fireDirection;
+        }
+        else if (x == 1 && y == 1)
+        {
+            fireDirection.x = 0.2f;
+            fireDirection.y = 0.2f;
+            fireDirection.z = 0;
+            fireOffSet = transform.position + fireDirection;
+        }
+        else if (x == -1 && y == 1)
+        {
+            fireDirection.x = -0.2f;
+            fireDirection.y = 0.2f;
+            fireDirection.z = 0;
+            fireOffSet = transform.position + fireDirection;
+        }
+    }
 }
