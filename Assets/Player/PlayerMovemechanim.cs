@@ -16,15 +16,15 @@ public class PlayerMovemechanim : NetworkBehaviour
     [Command]
     void CmdWalk(bool isWalking, float x, float y)
     {
-        if (isLocalPlayer)
-            return;
+        //Debug.Log("CmdWalk");
         RpcWalk(isWalking, x, y);
     }
 
     [ClientRpc]
     void RpcWalk(bool isWalking, float x, float y)
     {
-        anim = GetComponent<Animator>();
+        //Debug.Log("RpcWalk");
+        //anim = GetComponent<Animator>();
         anim.SetBool("isWalking", isWalking);
 
         if (isWalking)
@@ -59,28 +59,23 @@ public class PlayerMovemechanim : NetworkBehaviour
     // Use this for initialization
     void Start()
     {
-
+        anim = GetComponent<Animator>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        //if (!isLocalPlayer)
-        //return;
-        anim = GetComponent<Animator>();
+        if (!isLocalPlayer)
+            return;
+        //anim = GetComponent<Animator>();
         var x = Input.GetAxisRaw("Horizontal") * 0.1f;
         var y = Input.GetAxisRaw("Vertical") * 0.1f;
 
-
         if (Input.GetButton("Horizontal") || Input.GetButton("Vertical"))
         {
-
-
             bool isWalking = (Mathf.Abs(x) + Mathf.Abs(y)) > 0;
-
-            if(!isLocalPlayer)
             CmdWalk(isWalking, x, y);
-            RpcWalk(isWalking, x, y);
+            //RpcWalk(isWalking, x, y);
 
 
         }
