@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
+using System;
 
 public class PlayerMovemechanim : NetworkBehaviour
 {
@@ -12,6 +13,32 @@ public class PlayerMovemechanim : NetworkBehaviour
         anim = GetComponent<Animator>();
     }
 
+    [Command]
+    void CmdWalk(bool isWalking, float x, float y)
+    {
+        if (isLocalPlayer)
+            return;
+        RpcWalk(isWalking, x, y);
+    }
+
+    [ClientRpc]
+    void RpcWalk(bool isWalking, float x, float y)
+    {
+        anim = GetComponent<Animator>();
+        anim.SetBool("isWalking", isWalking);
+
+        if (isWalking)
+        {
+            anim.SetFloat("x", x);
+            anim.SetFloat("y", y);
+            //transform.Translate(x, y, 0);
+            transform.position += new Vector3(x, y, 0).normalized * Time.deltaTime;
+
+        }
+    }
+
+
+
     //Command runs function on server
     [Command]
     void CmdFire()
@@ -21,7 +48,7 @@ public class PlayerMovemechanim : NetworkBehaviour
             transform.position + transform.right, //set var
             Quaternion.identity); // rotation
 
-        bullet.GetComponent<Rigidbody2D>().velocity = transform.right * 4; 
+        bullet.GetComponent<Rigidbody2D>().velocity = transform.right * 4;
 
         //spawn on clients
         NetworkServer.Spawn(bullet);
@@ -38,9 +65,9 @@ public class PlayerMovemechanim : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!isLocalPlayer)
-            return;
-
+        //if (!isLocalPlayer)
+        //return;
+        anim = GetComponent<Animator>();
         var x = Input.GetAxisRaw("Horizontal") * 0.1f;
         var y = Input.GetAxisRaw("Vertical") * 0.1f;
 
@@ -51,16 +78,11 @@ public class PlayerMovemechanim : NetworkBehaviour
 
             bool isWalking = (Mathf.Abs(x) + Mathf.Abs(y)) > 0;
 
-            anim.SetBool("isWalking", isWalking);
+            if(!isLocalPlayer)
+            CmdWalk(isWalking, x, y);
+            RpcWalk(isWalking, x, y);
 
-            if (isWalking)
-            {
-                anim.SetFloat("x", x);
-                anim.SetFloat("y", y);
-                //transform.Translate(x, y, 0);
-                transform.position += new Vector3(x, y, 0).normalized * Time.deltaTime;
 
-            }
         }
         if (Input.GetKeyDown(KeyCode.Space))
         {
