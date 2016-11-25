@@ -12,14 +12,13 @@ public class EnemySpawner : NetworkBehaviour {
         for(int i = 0; i<numEnemies; i++)
         {
             var pos = new Vector3(
-                Random.Range(-8.0f, 8.0f),
+                Random.Range(-1.0f, 1.0f),
                 0.2f,
-                Random.Range(-8.0f, 8.0f)
+                Random.Range(-1.0f, 1.0f)
                 );
 
             var rotation = Quaternion.Euler(
-                0,0, 
-                Random.Range(0, 180));
+                0,0, 0);
 
             var enemy = (GameObject)Instantiate(enemyPrefab, pos, rotation);
             NetworkServer.Spawn(enemy);
